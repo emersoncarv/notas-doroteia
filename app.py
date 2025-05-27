@@ -54,6 +54,7 @@ if 'notas' not in st.session_state:
 else:
     # busca as notas armazenadas em memória
     notas = st.session_state['notas']
+    print('\n', 'em memória', notas)
 
 # barra lateral
 with st.sidebar:
@@ -78,13 +79,7 @@ with st.sidebar:
 
     st.divider()
 
-    st.download_button(
-        label='Exportar arquivo de notas',
-        data=notas.to_csv(index=False).encode('utf-8'),
-        file_name='notas.csv',
-        mime='text/csv',
-        # disabled=(notas.shape[0]==0)
-    )
+    
 
 # interface principal
 tabs = st.tabs(disciplinas)
@@ -126,10 +121,25 @@ for i, tab in enumerate(tabs):
                         "Nota Necessária para 7.0": [nota_necessaria]
                     })
 
+                    
+                    # Remove entradas duplicadas antes de adicionar a nova
+                    notas = notas[~(
+                        (notas['Disciplina'] == disciplinas[i]) & (notas['Trimestre'] == trimestres[j])
+                    )]
                     notas = pd.concat([notas, nova_linha], ignore_index=True)
 
-notas.drop_duplicates(inplace=True)
+# notas.drop_duplicates(inplace=True)
 notas.sort_values(by=['Disciplina', 'Trimestre'], inplace=True)
+st.session_state['notas'] = notas
+print('\n', notas)
+
+st.download_button(
+    label='Exportar arquivo de notas',
+    data=notas.to_csv(index=False).encode('utf-8'),
+    file_name='notas.csv',
+    mime='text/csv',
+    disabled=(notas.shape[0]==0)
+)
 
 st.divider()
 
